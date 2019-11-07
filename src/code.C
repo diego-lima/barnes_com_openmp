@@ -74,6 +74,7 @@ MAIN_ENV
 #define global  /* nada */
 
 #include "stdinc.h"
+#include <omp.h>   
 
 string defv[] = {                 /* DEFAULT PARAMETER VALUES              */
     /* file names for input/output                                         */
@@ -239,8 +240,21 @@ static long Direction_Sequence[NUM_DIRECTIONS][NSUB] =
  /* FDA_BLA */
 };
 
+void Hello(void) {
+   int my_rank = omp_get_thread_num();
+   int thread_count = omp_get_num_threads();
+
+   printf("Hello from thread %d of %d\n", my_rank, thread_count);
+
+}
+
 int main (int argc, string argv[])
 {
+#  pragma omp parallel
+   Hello();
+   
+   exit(0);
+
    long c;
 
 #ifdef ENABLE_PARSEC_HOOKS
