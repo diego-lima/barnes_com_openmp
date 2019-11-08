@@ -250,15 +250,9 @@ void Hello(void) {
 
 int main (int argc, string argv[])
 {
-#  pragma omp parallel
-   Hello();
-   
-   printf("OOOOI\n");
-   printf("OOOOI\n");
-   printf("OOOOI\n");
-
-   exit(0);
-
+   // printf("=========\n");
+   // printf("Rodando com %d threads\n", omp_get_max_threads());
+   // printf("=========\n");
    long c;
 
 #ifdef ENABLE_PARSEC_HOOKS
@@ -291,6 +285,7 @@ int main (int argc, string argv[])
    Global->current_id = 0;
 
    CLOCK(Global->computestart);
+   double start = omp_get_wtime();
 
    printf("COMPUTESTART  = %12lu\n",Global->computestart);
 
@@ -307,6 +302,14 @@ int main (int argc, string argv[])
 #endif
 
    CLOCK(Global->computeend);
+   double end = omp_get_wtime();
+   double tempo = end - start;
+
+   
+   printf("=========\n");
+   printf("MEU TEMPO    = %12g segundos\n", tempo);
+   printf("MEU TEMPO 2  = %12lu segundos\n",(Global->computeend - Global->computestart) / 1000000.0);
+   printf("=========\n");
 
    printf("COMPUTEEND    = %12lu\n",Global->computeend);
    printf("COMPUTETIME   = %12lu\n",Global->computeend - Global->computestart);
@@ -789,13 +792,13 @@ void ComputeForces(long ProcessId)
       Local[ProcessId].myn2bcalc += Local[ProcessId].myn2bterm;
       Local[ProcessId].mynbccalc += Local[ProcessId].mynbcterm;
       if (!Local[ProcessId].skipself) {       /*   did we miss self-int?  */
-	 Local[ProcessId].myselfint++;        /*   count another goofup   */
+   Local[ProcessId].myselfint++;        /*   count another goofup   */
       }
       if (Local[ProcessId].nstep > 0) {
-	 /*   use change in accel to make 2nd order correction to vel      */
-	 SUBV(dacc, Acc(p), acc1);
-	 MULVS(dvel, dacc, dthf);
-	 ADDV(Vel(p), Vel(p), dvel);
+   /*   use change in accel to make 2nd order correction to vel      */
+   SUBV(dacc, Acc(p), acc1);
+   MULVS(dvel, dacc, dthf);
+   ADDV(Vel(p), Vel(p), dvel);
       }
    }
 }

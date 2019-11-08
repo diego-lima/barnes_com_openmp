@@ -101,7 +101,7 @@ void hackwalk(long ProcessId)
 /*
  * WALKSUB: recursive routine to do hackwalk operation.
  */
-
+bool printou = FALSE;
 void walksub(nodeptr n, real dsq, long ProcessId)
 {
    nodeptr* nn;
@@ -111,14 +111,26 @@ void walksub(nodeptr n, real dsq, long ProcessId)
 
    if (subdivp(n, dsq, ProcessId)) {
       if (Type(n) == CELL) {
+         // #pragma omp parallel
+         // #pragma omp single
 	 for (nn = Subp(n); nn < Subp(n) + NSUB; nn++) {
 	    if (*nn != NULL) {
-	       walksub(*nn, dsq / 4.0, ProcessId);
+         //  #pragma omp task
+         //  {
+	         walksub(*nn, dsq / 4.0, ProcessId);
+            if(!printou){
+               printou = TRUE;
+               // printf("=========\n");
+               // printf("Rodando com %d threads\n", omp_get_max_threads());
+               // printf("=========\n");
+            }
+         //  }
 	    }
 	 }
       }
       else {
 	 l = (leafptr) n;
+   //  #pragma omp parallel for 
 	 for (i = 0; i < l->num_bodies; i++) {
 	    p = Bodyp(l)[i];
 	    if (p != Local[ProcessId].pskip) {
