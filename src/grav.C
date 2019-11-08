@@ -101,6 +101,7 @@ void hackwalk(long ProcessId)
 /*
  * WALKSUB: recursive routine to do hackwalk operation.
  */
+int cws = 0;
 
 void walksub(nodeptr n, real dsq, long ProcessId)
 {
@@ -108,13 +109,17 @@ void walksub(nodeptr n, real dsq, long ProcessId)
    leafptr l;
    bodyptr p;
    long i;
+   // if (cws < 10){
+   //    printf("walksub\n");
+   //    cws++;
+   // }
 
    if (subdivp(n, dsq, ProcessId)) {
       if (Type(n) == CELL) {
 	 for (nn = Subp(n); nn < Subp(n) + NSUB; nn++) {
-	    if (*nn != NULL) {
-	       walksub(*nn, dsq / 4.0, ProcessId);
-	    }
+      if (*nn != NULL) {
+         walksub(*nn, dsq / 4.0, ProcessId);
+      }
 	 }
       }
       else {
@@ -122,6 +127,7 @@ void walksub(nodeptr n, real dsq, long ProcessId)
 	 for (i = 0; i < l->num_bodies; i++) {
 	    p = Bodyp(l)[i];
 	    if (p != Local[ProcessId].pskip) {
+          #  pragma omp task
 	       gravsub(p, ProcessId);
 	    }
 	    else {
@@ -131,6 +137,7 @@ void walksub(nodeptr n, real dsq, long ProcessId)
       }
    }
    else {
+      #  pragma omp task
       gravsub(n, ProcessId);
    }
 }
