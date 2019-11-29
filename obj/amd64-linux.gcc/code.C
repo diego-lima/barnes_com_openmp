@@ -312,13 +312,7 @@ int main (int argc, string argv[])
 	__parsec_roi_begin();
 #endif
 
-   // # pragma omp parallel
-   // {
-   //    # pragma omp single 
-   //    {
-         CREATE(SlaveStart, NPROC);
-   //    }
-   // }
+   CREATE(SlaveStart, NPROC);
 
    WAIT_FOR_END(NPROC);
 
@@ -700,7 +694,6 @@ void stepsystem(long ProcessId)
 
 
     /* start at same time */
-   //  # pragma omp barrier
     BARRIER(Global->Barrier,NPROC);
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
@@ -737,16 +730,8 @@ void stepsystem(long ProcessId)
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         CLOCK(forcecalcstart);
     }
-
-    # pragma omp barrier
-    # pragma omp parallel
-    {
-       # pragma omp single
-       {
-          ComputeForces(ProcessId);
-       }
-    }
     
+   ComputeForces(ProcessId);
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         CLOCK(forcecalcend);
@@ -754,24 +739,35 @@ void stepsystem(long ProcessId)
     }
 
     /* advance my bodies */
-    for (pp = Local[ProcessId].mybodytab;
-	 pp < Local[ProcessId].mybodytab+Local[ProcessId].mynbody; pp++) {
-       p = *pp;
-       MULVS(dvel, Acc(p), dthf);
-       ADDV(vel1, Vel(p), dvel);
-       MULVS(dpos, vel1, dtime);
-       ADDV(Pos(p), Pos(p), dpos);
-       ADDV(Vel(p), vel1, dvel);
+    # pragma omp parallel
+   {
+      # pragma omp single
+      {
+         for (pp = Local[ProcessId].mybodytab;
+         pp < Local[ProcessId].mybodytab+Local[ProcessId].mynbody; pp++) {
+            # pragma omp task
+            {
+                  p = *pp;
+                  MULVS(dvel, Acc(p), dthf);
+                  ADDV(vel1, Vel(p), dvel);
+                  MULVS(dpos, vel1, dtime);
+                  ADDV(Pos(p), Pos(p), dpos);
+                  ADDV(Vel(p), vel1, dvel);
 
-       for (i = 0; i < NDIM; i++) {
-          if (Pos(p)[i]<Local[ProcessId].min[i]) {
-	     Local[ProcessId].min[i]=Pos(p)[i];
-	  }
-          if (Pos(p)[i]>Local[ProcessId].max[i]) {
-	     Local[ProcessId].max[i]=Pos(p)[i] ;
-	  }
-       }
-    }
+                  for (i = 0; i < NDIM; i++) {
+                     if (Pos(p)[i]<Local[ProcessId].min[i]) {
+                  Local[ProcessId].min[i]=Pos(p)[i];
+               }
+                     if (Pos(p)[i]>Local[ProcessId].max[i]) {
+                  Local[ProcessId].max[i]=Pos(p)[i] ;
+               }
+                  }
+               
+            }
+         }
+         # pragma omp taskwait
+      }
+   }
     LOCK(Global->CountLock);
     for (i = 0; i < NDIM; i++) {
        if (Global->min[i] > Local[ProcessId].min[i]) {
@@ -821,9 +817,7 @@ void ComputeForces(long ProcessId)
       p = *pp;
       SETV(acc1, Acc(p));
       Cost(p)=0;
-      // # pragma omp task
       hackgrav(p,ProcessId);
-      # pragma omp taskwait
       Local[ProcessId].myn2bcalc += Local[ProcessId].myn2bterm;
       Local[ProcessId].mynbccalc += Local[ProcessId].mynbcterm;
       if (!Local[ProcessId].skipself) {       /*   did we miss self-int?  */

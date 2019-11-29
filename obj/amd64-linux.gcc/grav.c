@@ -51,13 +51,7 @@ void hackgrav(bodyptr p, long ProcessId)
    Local[ProcessId].myn2bterm = 0;
    Local[ProcessId].mynbcterm = 0;
    Local[ProcessId].skipself = FALSE;
-   // # pragma omp parallel
-   // {
-      // # pragma omp single 
-      // {
-         hackwalk(ProcessId);
-      // }
-   // }
+   hackwalk(ProcessId);
    Phi(p) = Local[ProcessId].phi0;
    SETV(Acc(p), Local[ProcessId].acc0);
 #ifdef QUADPOLE
@@ -137,8 +131,6 @@ void walksub(nodeptr n, real dsq, long ProcessId)
 
    if (subdivp(n, dsq, ProcessId)) {
       if (Type(n) == CELL) {
-         // #pragma omp parallel
-         // #pragma omp single
 	 for (nn = Subp(n); nn < Subp(n) + NSUB; nn++) {
       if (*nn != NULL) {
          walksub(*nn, dsq / 4.0, ProcessId);
@@ -151,7 +143,7 @@ void walksub(nodeptr n, real dsq, long ProcessId)
 	 for (i = 0; i < l->num_bodies; i++) {
 	    p = Bodyp(l)[i];
 	    if (p != Local[ProcessId].pskip) {
-          #  pragma omp task
+         //  #  pragma omp task
 	       gravsub(p, ProcessId);
 	    }
 	    else {
@@ -161,7 +153,7 @@ void walksub(nodeptr n, real dsq, long ProcessId)
       }
    }
    else {
-      #  pragma omp task
+      // #  pragma omp task
       gravsub(n, ProcessId);
    }
 }

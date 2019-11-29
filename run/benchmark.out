@@ -10,18 +10,18 @@ omp_get_max_threads = 4
      nbody     dtime       eps       tol     dtout     tstop    fcells     NPROC
      65536   0.02500    0.0500      1.00     0.250     0.075      2.00         1
 
-COMPUTESTART  = 1575048716076213
+COMPUTESTART  = 1575051731948856
 =========
-MEU TEMPO    =      51.6367 segundos
+MEU TEMPO    =      3.08611 segundos
 =========
-COMPUTEEND    = 1575048767712923
-COMPUTETIME   =     51636710
-TRACKTIME     =     24997867
-PARTITIONTIME =         4580	 0.00
-TREEBUILDTIME =        32312	 0.00
-FORCECALCTIME =     24955030	 1.00
-RESTTIME      =         5945	 0.00
+COMPUTEEND    = 1575051735034966
+COMPUTETIME   =      3086110
+TRACKTIME     =      1544222
+PARTITIONTIME =         4391	 0.00
+TREEBUILDTIME =        30586	 0.02
+FORCECALCTIME =      1421752	 0.92
+RESTTIME      =        87493	 0.06
 
-real	0m51,674s
-user	2m56,936s
-sys	0m13,062s
+real	0m3,118s
+user	0m3,625s
+sys	0m0,061s

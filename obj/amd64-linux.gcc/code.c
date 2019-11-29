@@ -339,56 +339,50 @@ int main (int argc, string argv[])
 	__parsec_roi_begin();
 #endif
 
-   // # pragma omp parallel
-   // {
-   //    # pragma omp single 
-   //    {
-         {
-#line 319
+   {
+#line 315
 	long	i, Error;
-#line 319
+#line 315
 
-#line 319
+#line 315
 	for (i = 0; i < (NPROC) - 1; i++) {
-#line 319
+#line 315
 		Error = pthread_create(&PThreadTable[i], NULL, (void * (*)(void *))(SlaveStart), NULL);
-#line 319
+#line 315
 		if (Error != 0) {
-#line 319
+#line 315
 			printf("Error in pthread_create().\n");
-#line 319
+#line 315
 			exit(-1);
-#line 319
+#line 315
 		}
-#line 319
+#line 315
 	}
-#line 319
+#line 315
 
-#line 319
+#line 315
 	SlaveStart();
-#line 319
+#line 315
 };
-   //    }
-   // }
 
    {
-#line 323
+#line 317
 	unsigned long	i, Error;
-#line 323
+#line 317
 	for (i = 0; i < (NPROC) - 1; i++) {
-#line 323
+#line 317
 		Error = pthread_join(PThreadTable[i], NULL);
-#line 323
+#line 317
 		if (Error != 0) {
-#line 323
+#line 317
 			printf("Error in pthread_join().\n");
-#line 323
+#line 317
 			exit(-1);
-#line 323
+#line 317
 		}
-#line 323
+#line 317
 	}
-#line 323
+#line 317
 };
 
 #ifdef ENABLE_PARSEC_HOOKS
@@ -396,15 +390,15 @@ int main (int argc, string argv[])
 #endif
 
    {
-#line 329
+#line 323
 	struct timeval	FullTime;
-#line 329
+#line 323
 
-#line 329
+#line 323
 	gettimeofday(&FullTime, NULL);
-#line 329
+#line 323
 	(Global->computeend) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 329
+#line 323
 };
    double end = omp_get_wtime();
    double tempo = end - start;
@@ -448,41 +442,41 @@ void ANLinit()
    if (Global==NULL) error("No initialization for Global\n");
 
    {
-#line 371
+#line 365
 	unsigned long	Error;
-#line 371
+#line 365
 
-#line 371
+#line 365
 	Error = pthread_mutex_init(&(Global->Barrier).mutex, NULL);
-#line 371
+#line 365
 	if (Error != 0) {
-#line 371
+#line 365
 		printf("Error while initializing barrier.\n");
-#line 371
+#line 365
 		exit(-1);
-#line 371
+#line 365
 	}
-#line 371
+#line 365
 
-#line 371
+#line 365
 	Error = pthread_cond_init(&(Global->Barrier).cv, NULL);
-#line 371
+#line 365
 	if (Error != 0) {
-#line 371
+#line 365
 		printf("Error while initializing barrier.\n");
-#line 371
+#line 365
 		pthread_mutex_destroy(&(Global->Barrier).mutex);
-#line 371
+#line 365
 		exit(-1);
-#line 371
+#line 365
 	}
-#line 371
+#line 365
 
-#line 371
+#line 365
 	(Global->Barrier).counter = 0;
-#line 371
+#line 365
 	(Global->Barrier).cycle = 0;
-#line 371
+#line 365
 };
 
    {pthread_mutex_init(&(Global->CountLock), NULL);};
@@ -557,25 +551,25 @@ void tab_init()
 
    CellLock = (struct CellLockType *) malloc(sizeof(struct CellLockType));;
    {
-#line 444
+#line 438
 	unsigned long	i, Error;
-#line 444
+#line 438
 
-#line 444
+#line 438
 	for (i = 0; i < MAXLOCK; i++) {
-#line 444
+#line 438
 		Error = pthread_mutex_init(&CellLock->CL[i], NULL);
-#line 444
+#line 438
 		if (Error != 0) {
-#line 444
+#line 438
 			printf("Error while initializing array of locks.\n");
-#line 444
+#line 438
 			exit(-1);
-#line 444
+#line 438
 		}
-#line 444
+#line 438
 	}
-#line 444
+#line 438
 };
 }
 
@@ -823,15 +817,15 @@ void stepsystem(long ProcessId)
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         {
-#line 690
+#line 684
 	struct timeval	FullTime;
-#line 690
+#line 684
 
-#line 690
+#line 684
 	gettimeofday(&FullTime, NULL);
-#line 690
+#line 684
 	(trackstart) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 690
+#line 684
 };
     }
 
@@ -845,72 +839,71 @@ void stepsystem(long ProcessId)
 
 
     /* start at same time */
-   //  # pragma omp barrier
     {
-#line 704
+#line 697
 	unsigned long	Error, Cycle;
-#line 704
+#line 697
 	int		Cancel, Temp;
-#line 704
+#line 697
 
-#line 704
+#line 697
 	Error = pthread_mutex_lock(&(Global->Barrier).mutex);
-#line 704
+#line 697
 	if (Error != 0) {
-#line 704
+#line 697
 		printf("Error while trying to get lock in barrier.\n");
-#line 704
+#line 697
 		exit(-1);
-#line 704
+#line 697
 	}
-#line 704
+#line 697
 
-#line 704
+#line 697
 	Cycle = (Global->Barrier).cycle;
-#line 704
+#line 697
 	if (++(Global->Barrier).counter != (NPROC)) {
-#line 704
+#line 697
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &Cancel);
-#line 704
+#line 697
 		while (Cycle == (Global->Barrier).cycle) {
-#line 704
+#line 697
 			Error = pthread_cond_wait(&(Global->Barrier).cv, &(Global->Barrier).mutex);
-#line 704
+#line 697
 			if (Error != 0) {
-#line 704
+#line 697
 				break;
-#line 704
+#line 697
 			}
-#line 704
+#line 697
 		}
-#line 704
+#line 697
 		pthread_setcancelstate(Cancel, &Temp);
-#line 704
+#line 697
 	} else {
-#line 704
+#line 697
 		(Global->Barrier).cycle = !(Global->Barrier).cycle;
-#line 704
+#line 697
 		(Global->Barrier).counter = 0;
-#line 704
+#line 697
 		Error = pthread_cond_broadcast(&(Global->Barrier).cv);
-#line 704
+#line 697
 	}
-#line 704
+#line 697
 	pthread_mutex_unlock(&(Global->Barrier).mutex);
-#line 704
+#line 697
 };
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         {
-#line 707
+#line 700
 	struct timeval	FullTime;
-#line 707
+#line 700
 
-#line 707
+#line 700
 	gettimeofday(&FullTime, NULL);
-#line 707
+#line 700
 	(treebuildstart) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 707
+#line 700
 };
     }
 
@@ -918,15 +911,15 @@ void stepsystem(long ProcessId)
     maketree(ProcessId);
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         {
-#line 713
+#line 706
 	struct timeval	FullTime;
-#line 713
+#line 706
 
-#line 713
+#line 706
 	gettimeofday(&FullTime, NULL);
-#line 713
+#line 706
 	(treebuildend) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 713
+#line 706
 };
         Global->treebuildtime += treebuildend - treebuildstart;
     }
@@ -940,15 +933,15 @@ void stepsystem(long ProcessId)
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         {
-#line 725
+#line 718
 	struct timeval	FullTime;
-#line 725
+#line 718
 
-#line 725
+#line 718
 	gettimeofday(&FullTime, NULL);
-#line 725
+#line 718
 	(partitionstart) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 725
+#line 718
 };
     }
 
@@ -958,77 +951,80 @@ void stepsystem(long ProcessId)
 /*     B*RRIER(Global->Barcom,NPROC); */
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         {
-#line 733
+#line 726
 	struct timeval	FullTime;
-#line 733
+#line 726
 
-#line 733
+#line 726
 	gettimeofday(&FullTime, NULL);
-#line 733
+#line 726
 	(partitionend) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 733
+#line 726
 };
         Global->partitiontime += partitionend - partitionstart;
     }
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         {
-#line 738
+#line 731
 	struct timeval	FullTime;
-#line 738
+#line 731
 
-#line 738
+#line 731
 	gettimeofday(&FullTime, NULL);
-#line 738
+#line 731
 	(forcecalcstart) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 738
+#line 731
 };
     }
-
-    # pragma omp barrier
-    # pragma omp parallel
-    {
-       # pragma omp single
-       {
-          ComputeForces(ProcessId);
-       }
-    }
     
+   ComputeForces(ProcessId);
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         {
-#line 752
+#line 737
 	struct timeval	FullTime;
-#line 752
+#line 737
 
-#line 752
+#line 737
 	gettimeofday(&FullTime, NULL);
-#line 752
+#line 737
 	(forcecalcend) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 752
+#line 737
 };
         Global->forcecalctime += forcecalcend - forcecalcstart;
     }
 
     /* advance my bodies */
-    for (pp = Local[ProcessId].mybodytab;
-	 pp < Local[ProcessId].mybodytab+Local[ProcessId].mynbody; pp++) {
-       p = *pp;
-       MULVS(dvel, Acc(p), dthf);
-       ADDV(vel1, Vel(p), dvel);
-       MULVS(dpos, vel1, dtime);
-       ADDV(Pos(p), Pos(p), dpos);
-       ADDV(Vel(p), vel1, dvel);
+    # pragma omp parallel
+   {
+      # pragma omp single
+      {
+         for (pp = Local[ProcessId].mybodytab;
+         pp < Local[ProcessId].mybodytab+Local[ProcessId].mynbody; pp++) {
+            # pragma omp task
+            {
+                  p = *pp;
+                  MULVS(dvel, Acc(p), dthf);
+                  ADDV(vel1, Vel(p), dvel);
+                  MULVS(dpos, vel1, dtime);
+                  ADDV(Pos(p), Pos(p), dpos);
+                  ADDV(Vel(p), vel1, dvel);
 
-       for (i = 0; i < NDIM; i++) {
-          if (Pos(p)[i]<Local[ProcessId].min[i]) {
-	     Local[ProcessId].min[i]=Pos(p)[i];
-	  }
-          if (Pos(p)[i]>Local[ProcessId].max[i]) {
-	     Local[ProcessId].max[i]=Pos(p)[i] ;
-	  }
-       }
-    }
+                  for (i = 0; i < NDIM; i++) {
+                     if (Pos(p)[i]<Local[ProcessId].min[i]) {
+                  Local[ProcessId].min[i]=Pos(p)[i];
+               }
+                     if (Pos(p)[i]>Local[ProcessId].max[i]) {
+                  Local[ProcessId].max[i]=Pos(p)[i] ;
+               }
+                  }
+               
+            }
+         }
+         # pragma omp taskwait
+      }
+   }
     {pthread_mutex_lock(&(Global->CountLock));};
     for (i = 0; i < NDIM; i++) {
        if (Global->min[i] > Local[ProcessId].min[i]) {
@@ -1044,70 +1040,70 @@ void stepsystem(long ProcessId)
     /* and max coordinates, and has accumulated them into the global   */
     /* min and max, before the new dimensions are computed	       */
     {
-#line 789
+#line 785
 	unsigned long	Error, Cycle;
-#line 789
+#line 785
 	int		Cancel, Temp;
-#line 789
+#line 785
 
-#line 789
+#line 785
 	Error = pthread_mutex_lock(&(Global->Barrier).mutex);
-#line 789
+#line 785
 	if (Error != 0) {
-#line 789
+#line 785
 		printf("Error while trying to get lock in barrier.\n");
-#line 789
+#line 785
 		exit(-1);
-#line 789
+#line 785
 	}
-#line 789
+#line 785
 
-#line 789
+#line 785
 	Cycle = (Global->Barrier).cycle;
-#line 789
+#line 785
 	if (++(Global->Barrier).counter != (NPROC)) {
-#line 789
+#line 785
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &Cancel);
-#line 789
+#line 785
 		while (Cycle == (Global->Barrier).cycle) {
-#line 789
+#line 785
 			Error = pthread_cond_wait(&(Global->Barrier).cv, &(Global->Barrier).mutex);
-#line 789
+#line 785
 			if (Error != 0) {
-#line 789
+#line 785
 				break;
-#line 789
+#line 785
 			}
-#line 789
+#line 785
 		}
-#line 789
+#line 785
 		pthread_setcancelstate(Cancel, &Temp);
-#line 789
+#line 785
 	} else {
-#line 789
+#line 785
 		(Global->Barrier).cycle = !(Global->Barrier).cycle;
-#line 789
+#line 785
 		(Global->Barrier).counter = 0;
-#line 789
+#line 785
 		Error = pthread_cond_broadcast(&(Global->Barrier).cv);
-#line 789
+#line 785
 	}
-#line 789
+#line 785
 	pthread_mutex_unlock(&(Global->Barrier).mutex);
-#line 789
+#line 785
 };
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         {
-#line 792
+#line 788
 	struct timeval	FullTime;
-#line 792
+#line 788
 
-#line 792
+#line 788
 	gettimeofday(&FullTime, NULL);
-#line 792
+#line 788
 	(trackend) = (unsigned long)(FullTime.tv_usec + FullTime.tv_sec * 1000000);
-#line 792
+#line 788
 };
         Global->tracktime += trackend - trackstart;
     }
@@ -1140,9 +1136,7 @@ void ComputeForces(long ProcessId)
       p = *pp;
       SETV(acc1, Acc(p));
       Cost(p)=0;
-      // # pragma omp task
       hackgrav(p,ProcessId);
-      # pragma omp taskwait
       Local[ProcessId].myn2bcalc += Local[ProcessId].myn2bterm;
       Local[ProcessId].mynbccalc += Local[ProcessId].mynbcterm;
       if (!Local[ProcessId].skipself) {       /*   did we miss self-int?  */
@@ -1180,57 +1174,57 @@ void find_my_initial_bodies(bodyptr btab, long nbody, long ProcessId)
      Local[ProcessId].mybodytab[i] = &(btab[offset+i]);
   }
   {
-#line 863
+#line 857
 	unsigned long	Error, Cycle;
-#line 863
+#line 857
 	int		Cancel, Temp;
-#line 863
+#line 857
 
-#line 863
+#line 857
 	Error = pthread_mutex_lock(&(Global->Barrier).mutex);
-#line 863
+#line 857
 	if (Error != 0) {
-#line 863
+#line 857
 		printf("Error while trying to get lock in barrier.\n");
-#line 863
+#line 857
 		exit(-1);
-#line 863
+#line 857
 	}
-#line 863
+#line 857
 
-#line 863
+#line 857
 	Cycle = (Global->Barrier).cycle;
-#line 863
+#line 857
 	if (++(Global->Barrier).counter != (NPROC)) {
-#line 863
+#line 857
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &Cancel);
-#line 863
+#line 857
 		while (Cycle == (Global->Barrier).cycle) {
-#line 863
+#line 857
 			Error = pthread_cond_wait(&(Global->Barrier).cv, &(Global->Barrier).mutex);
-#line 863
+#line 857
 			if (Error != 0) {
-#line 863
+#line 857
 				break;
-#line 863
+#line 857
 			}
-#line 863
+#line 857
 		}
-#line 863
+#line 857
 		pthread_setcancelstate(Cancel, &Temp);
-#line 863
+#line 857
 	} else {
-#line 863
+#line 857
 		(Global->Barrier).cycle = !(Global->Barrier).cycle;
-#line 863
+#line 857
 		(Global->Barrier).counter = 0;
-#line 863
+#line 857
 		Error = pthread_cond_broadcast(&(Global->Barrier).cv);
-#line 863
+#line 857
 	}
-#line 863
+#line 857
 	pthread_mutex_unlock(&(Global->Barrier).mutex);
-#line 863
+#line 857
 };
 }
 
