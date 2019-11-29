@@ -1,11 +1,27 @@
 Generating input file input_1...
 Running /home/diego/projetos/parsec-3.0/ext/splash2x/apps/barnes/inst/amd64-linux.gcc/bin/barnes 1 < input_1:
-Hello from thread 0 of 2
-Hello from thread 1 of 2
-OOOOI
-OOOOI
-OOOOI
+=========
+Rodando com OpenMP
+omp_get_max_threads = 4
+=========
 
-real	0m0,006s
-user	0m0,004s
-sys	0m0,000s
+		Hack code: Plummer model
+
+     nbody     dtime       eps       tol     dtout     tstop    fcells     NPROC
+     65536   0.02500    0.0500      1.00     0.250     0.075      2.00         1
+
+COMPUTESTART  = 1575048716076213
+=========
+MEU TEMPO    =      51.6367 segundos
+=========
+COMPUTEEND    = 1575048767712923
+COMPUTETIME   =     51636710
+TRACKTIME     =     24997867
+PARTITIONTIME =         4580	 0.00
+TREEBUILDTIME =        32312	 0.00
+FORCECALCTIME =     24955030	 1.00
+RESTTIME      =         5945	 0.00
+
+real	0m51,674s
+user	2m56,936s
+sys	0m13,062s

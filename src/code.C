@@ -250,10 +250,27 @@ void Hello(void) {
 
 int main (int argc, string argv[])
 {
-#  pragma omp parallel
-   Hello();
+   printf("=========\n");
+   printf("Rodando com OpenMP\n");
+   printf("omp_get_max_threads = %d\n", omp_get_max_threads());
+   printf("=========\n");
+
+   // #pragma omp parallel
+   // {
+   //    #pragma omp single
+   //    {
+   //       # pragma omp task
+   //       {
+   //          int my_rank = omp_get_thread_num();
+   //          int thread_count = omp_get_num_threads();
+   //          printf("Hello from thread %d of %d\n", my_rank, thread_count);
+   //       }
+   //    }
+   // }
+
+   // exit(0);
    
-   exit(0);
+
 
    long c;
 
@@ -287,6 +304,7 @@ int main (int argc, string argv[])
    Global->current_id = 0;
 
    CLOCK(Global->computestart);
+   double start = omp_get_wtime();
 
    printf("COMPUTESTART  = %12lu\n",Global->computestart);
 
@@ -294,7 +312,13 @@ int main (int argc, string argv[])
 	__parsec_roi_begin();
 #endif
 
-   CREATE(SlaveStart, NPROC);
+   // # pragma omp parallel
+   // {
+   //    # pragma omp single 
+   //    {
+         CREATE(SlaveStart, NPROC);
+   //    }
+   // }
 
    WAIT_FOR_END(NPROC);
 
@@ -303,6 +327,13 @@ int main (int argc, string argv[])
 #endif
 
    CLOCK(Global->computeend);
+   double end = omp_get_wtime();
+   double tempo = end - start;
+
+   
+   printf("=========\n");
+   printf("MEU TEMPO    = %12g segundos\n", tempo);
+   printf("=========\n");
 
    printf("COMPUTEEND    = %12lu\n",Global->computeend);
    printf("COMPUTETIME   = %12lu\n",Global->computeend - Global->computestart);
@@ -669,6 +700,7 @@ void stepsystem(long ProcessId)
 
 
     /* start at same time */
+   //  # pragma omp barrier
     BARRIER(Global->Barrier,NPROC);
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
@@ -706,7 +738,15 @@ void stepsystem(long ProcessId)
         CLOCK(forcecalcstart);
     }
 
-    ComputeForces(ProcessId);
+    # pragma omp barrier
+    # pragma omp parallel
+    {
+       # pragma omp single
+       {
+          ComputeForces(ProcessId);
+       }
+    }
+    
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         CLOCK(forcecalcend);
@@ -781,18 +821,19 @@ void ComputeForces(long ProcessId)
       p = *pp;
       SETV(acc1, Acc(p));
       Cost(p)=0;
-      #pragma omp task
+      // # pragma omp task
       hackgrav(p,ProcessId);
+      # pragma omp taskwait
       Local[ProcessId].myn2bcalc += Local[ProcessId].myn2bterm;
       Local[ProcessId].mynbccalc += Local[ProcessId].mynbcterm;
       if (!Local[ProcessId].skipself) {       /*   did we miss self-int?  */
-	 Local[ProcessId].myselfint++;        /*   count another goofup   */
+   Local[ProcessId].myselfint++;        /*   count another goofup   */
       }
       if (Local[ProcessId].nstep > 0) {
-	 /*   use change in accel to make 2nd order correction to vel      */
-	 SUBV(dacc, Acc(p), acc1);
-	 MULVS(dvel, dacc, dthf);
-	 ADDV(Vel(p), Vel(p), dvel);
+   /*   use change in accel to make 2nd order correction to vel      */
+   SUBV(dacc, Acc(p), acc1);
+   MULVS(dvel, dacc, dthf);
+   ADDV(Vel(p), Vel(p), dvel);
       }
    }
 }
