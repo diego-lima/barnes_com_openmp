@@ -731,7 +731,13 @@ void stepsystem(long ProcessId)
         CLOCK(forcecalcstart);
     }
     
-   ComputeForces(ProcessId);
+   # pragma omp parallel
+   {
+      # pragma omp single
+      {
+         ComputeForces(ProcessId);
+      }
+   }
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         CLOCK(forcecalcend);
@@ -739,34 +745,24 @@ void stepsystem(long ProcessId)
     }
 
     /* advance my bodies */
-    # pragma omp parallel
-   {
-      # pragma omp single
-      {
-         for (pp = Local[ProcessId].mybodytab;
-         pp < Local[ProcessId].mybodytab+Local[ProcessId].mynbody; pp++) {
-            # pragma omp task
-            {
-                  p = *pp;
-                  MULVS(dvel, Acc(p), dthf);
-                  ADDV(vel1, Vel(p), dvel);
-                  MULVS(dpos, vel1, dtime);
-                  ADDV(Pos(p), Pos(p), dpos);
-                  ADDV(Vel(p), vel1, dvel);
+   for (pp = Local[ProcessId].mybodytab;
+   pp < Local[ProcessId].mybodytab+Local[ProcessId].mynbody; pp++) {
+      p = *pp;
+      MULVS(dvel, Acc(p), dthf);
+      ADDV(vel1, Vel(p), dvel);
+      MULVS(dpos, vel1, dtime);
+      ADDV(Pos(p), Pos(p), dpos);
+      ADDV(Vel(p), vel1, dvel);
 
-                  for (i = 0; i < NDIM; i++) {
-                     if (Pos(p)[i]<Local[ProcessId].min[i]) {
-                  Local[ProcessId].min[i]=Pos(p)[i];
-               }
-                     if (Pos(p)[i]>Local[ProcessId].max[i]) {
-                  Local[ProcessId].max[i]=Pos(p)[i] ;
-               }
-                  }
-               
-            }
+      for (i = 0; i < NDIM; i++) {
+         if (Pos(p)[i]<Local[ProcessId].min[i]) {
+            Local[ProcessId].min[i]=Pos(p)[i];
          }
-         # pragma omp taskwait
+         if (Pos(p)[i]>Local[ProcessId].max[i]) {
+            Local[ProcessId].max[i]=Pos(p)[i] ;
+         }
       }
+         
    }
     LOCK(Global->CountLock);
     for (i = 0; i < NDIM; i++) {
@@ -818,16 +814,17 @@ void ComputeForces(long ProcessId)
       SETV(acc1, Acc(p));
       Cost(p)=0;
       hackgrav(p,ProcessId);
+      # pragma omp taskwait
       Local[ProcessId].myn2bcalc += Local[ProcessId].myn2bterm;
       Local[ProcessId].mynbccalc += Local[ProcessId].mynbcterm;
       if (!Local[ProcessId].skipself) {       /*   did we miss self-int?  */
-   Local[ProcessId].myselfint++;        /*   count another goofup   */
+         Local[ProcessId].myselfint++;        /*   count another goofup   */
       }
       if (Local[ProcessId].nstep > 0) {
-   /*   use change in accel to make 2nd order correction to vel      */
-   SUBV(dacc, Acc(p), acc1);
-   MULVS(dvel, dacc, dthf);
-   ADDV(Vel(p), Vel(p), dvel);
+         /*   use change in accel to make 2nd order correction to vel      */
+         SUBV(dacc, Acc(p), acc1);
+         MULVS(dvel, dacc, dthf);
+         ADDV(Vel(p), Vel(p), dvel);
       }
    }
 }

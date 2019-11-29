@@ -128,7 +128,7 @@ void walksub(nodeptr n, real dsq, long ProcessId)
 	 for (i = 0; i < l->num_bodies; i++) {
 	    p = Bodyp(l)[i];
 	    if (p != Local[ProcessId].pskip) {
-         //  #  pragma omp task
+          #  pragma omp task
 	       gravsub(p, ProcessId);
 	    }
 	    else {
@@ -138,7 +138,7 @@ void walksub(nodeptr n, real dsq, long ProcessId)
       }
    }
    else {
-      // #  pragma omp task
+      #  pragma omp task
       gravsub(n, ProcessId);
    }
 }
