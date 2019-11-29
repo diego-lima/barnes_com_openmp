@@ -731,6 +731,7 @@ void stepsystem(long ProcessId)
         CLOCK(forcecalcstart);
     }
     
+   # pragma omp barrier
    # pragma omp parallel
    {
       # pragma omp single
@@ -738,32 +739,43 @@ void stepsystem(long ProcessId)
          ComputeForces(ProcessId);
       }
    }
+   # pragma omp barrier
 
     if ((ProcessId == 0) && (Local[ProcessId].nstep >= 2)) {
         CLOCK(forcecalcend);
         Global->forcecalctime += forcecalcend - forcecalcstart;
     }
 
-    /* advance my bodies */
-   for (pp = Local[ProcessId].mybodytab;
-   pp < Local[ProcessId].mybodytab+Local[ProcessId].mynbody; pp++) {
-      p = *pp;
-      MULVS(dvel, Acc(p), dthf);
-      ADDV(vel1, Vel(p), dvel);
-      MULVS(dpos, vel1, dtime);
-      ADDV(Pos(p), Pos(p), dpos);
-      ADDV(Vel(p), vel1, dvel);
+   # pragma omp parallel
+   {
+      # pragma omp single
+      {
+         /* advance my bodies */
+         for (pp = Local[ProcessId].mybodytab;
+         pp < Local[ProcessId].mybodytab+Local[ProcessId].mynbody; pp++) {
+            # pragma omp task
+            {
+               p = *pp;
+               MULVS(dvel, Acc(p), dthf);
+               ADDV(vel1, Vel(p), dvel);
+               MULVS(dpos, vel1, dtime);
+               ADDV(Pos(p), Pos(p), dpos);
+               ADDV(Vel(p), vel1, dvel);
 
-      for (i = 0; i < NDIM; i++) {
-         if (Pos(p)[i]<Local[ProcessId].min[i]) {
-            Local[ProcessId].min[i]=Pos(p)[i];
+               for (i = 0; i < NDIM; i++) {
+                  if (Pos(p)[i]<Local[ProcessId].min[i]) {
+                     Local[ProcessId].min[i]=Pos(p)[i];
+                  }
+                  if (Pos(p)[i]>Local[ProcessId].max[i]) {
+                     Local[ProcessId].max[i]=Pos(p)[i] ;
+                  }
+               }
+            }
          }
-         if (Pos(p)[i]>Local[ProcessId].max[i]) {
-            Local[ProcessId].max[i]=Pos(p)[i] ;
-         }
+         # pragma omp taskwait
       }
-         
    }
+
     LOCK(Global->CountLock);
     for (i = 0; i < NDIM; i++) {
        if (Global->min[i] > Local[ProcessId].min[i]) {
